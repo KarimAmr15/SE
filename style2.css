@@ -1,0 +1,191 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+*{
+    margin: 0;
+    padding: 0;
+}
+
+
+.sidebar{
+
+    position: fixed;
+    left: -240px;
+    width: 240px;
+    height: 100%;
+    background: #1e1e1e;
+    transition: all .5s ease;
+}
+.sidebar a{
+
+    display: block;
+    color: white;
+    height: 65px;
+    width: 100%;
+    line-height: 65px;
+    padding-left: 30px;
+    border-bottom: 1px solid rgba(255,255,255,.1);
+    border-top: 1px solid black;
+    border-left: 5px solid red;
+    box-sizing: border-box;
+    font-family: 'Open Sans' , sans-serif;
+    transition: all .5s ease;
+}
+
+a:hover{
+    border-left: 5px solid #b93632;
+    color: #b93632
+}
+
+
+.header{
+   color: white;
+   font-size: 28px;
+   line-height: 70px;
+   text-align: center;
+   background: #1b1b1b;
+   font-family: 'Montserrat' , sans-serif ;
+}
+.sidebar a span{
+    letter-spacing: 1px;
+    padding-right: 5px;
+}
+
+#check{
+    display: none;
+}
+label #btn, label #cancel{
+    position: absolute;
+    cursor: pointer;
+    background: #262626;
+    height: 45px;
+    width: 45px;
+    text-align: center;
+    line-height: 45px;
+    color: white;
+    font-size: 29px;
+    border-radius: 5px;
+    margin: 15px 30px;
+    border: 1px solid #262626;
+    transition: all .5s ease;
+}
+
+label #cancel{
+    opacity: 0;
+    visibility: hidden;
+}
+
+#check:checked ~ label #btn{
+
+    margin-left: 245px;
+    opacity: 0;
+    visibility: hidden;
+}
+
+#check:checked ~ label #cancel{
+
+    margin-left: 245px;
+    opacity: 1;
+    visibility: visible;
+}
+
+#check:checked ~ .sidebar{
+    left:0;
+}
+
+.loginlogo{
+
+    position: fixed;
+    top: 0;
+    right: 0;
+    margin: 20px; 
+    width: 150px; 
+    padding-right: 50px;
+}
+
+.loginbody{
+    width: 100%;
+    height: 100vh;
+    background-image: url(black.jpg);
+    background-size: cover;
+    background-position: center ;
+}
+
+.l{
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 430px;
+    width: 100%;
+    background: #fff;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+    border-radius: 10px;
+}
+
+.l .form{
+    padding: 30px;
+}
+
+.l .form .title{
+    font-size: 27px;
+    font-weight: 600;
+    position: relative;
+}
+.form .title::before{
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 3px;
+    width: 30px;
+    background-color: #000000;
+    border-radius: 25px;
+}
+
+.form .input-field{
+    position: relative;
+    height: 50px;
+    width: 100%;
+    margin-top: 30px;
+}
+
+.input-field input{
+    position: absolute;
+    height: 100%;
+    width:100%;
+    padding: 0 35px;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    border-bottom: 2px solid #ccc;
+    border-top: 2px solid transparent;
+
+}
+
+.input-field i{
+    position: absolute;
+    top: 50%;
+    left: 0 ;
+    transform: translateY(-50%);
+    color: #999;
+    font-size: 23px;
+}
+
+.form .button{
+    margin-top: 35px;
+}
+
+.from .button input{
+    border: none;
+    font-size: 17px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.form .login-signup{
+    margin-top: 30px;
+    text-align: center;
+}
