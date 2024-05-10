@@ -5,10 +5,11 @@ const app = express()
 app.use(express.static('views'))
 const port = 3000;
 const mongoose = require('mongoose');
-app.use(express.urlencoded({extended: true}))
+app.use(express.urlencoded({ extended: true }))
 
 const Customer = require("./models/mydataSchema");
 const Product = require('./models/productsSchema');
+const Order = require('./models/ordersSchema');
 
 
 
@@ -66,14 +67,13 @@ mongoose.connect('mongodb+srv://karimamr808:F9TTCB471FRXUxxz@cluster0.89usgfd.mo
     console.log(err)
 });
 
-app.post("/Register",(req,res)=>{
-    const { fname, lname ,dob,mail,password} = req.body; 
-    console.log(fname, lname,dob,mail,password); 
+app.post("/Register", (req, res) => {
+    const { fname, lname, dob, mail, password } = req.body;
+    console.log(fname, lname, dob, mail, password);
 
-    const c = new Customer({ fname, lname,mail,password,dob });
+    const c = new Customer({ fname, lname, mail, password, dob });
     c.save().then(() => {
         return res.status(401).send("registered successfully")
-        res.redirect("Home.html")
     }).catch((err) => {
         console.log(err);
         return res.status(401).send("User not found")
@@ -89,13 +89,13 @@ app.post("/Login", async (req, res) => {
         if (!user) {
             return res.status(401).send("User not found");
         }
-        
+
         if (user.password === password) {
-            
+
             res.status(401).send(" Login successfull");
             console.log("Login successful");
         } else {
-            
+
             res.status(401).send("Incorrect email or password");
         }
     } catch (error) {
@@ -106,19 +106,219 @@ app.post("/Login", async (req, res) => {
 
 
 
-app.get('/Product', async(req,res)=>{
 
-    const result = await Product.find();
-    res.send({"Product": result});
 
+
+
+
+
+
+
+
+
+
+
+
+
+app.get('/products', (req, res, next) => {
+
+    Product.find().exec().then(docs => {
+
+        console.log(docs);
+
+                res.status(200).json(docs);
+
+    }).catch(err => {
+
+        console.log(err);
+        res.status(500).json({
+            error: err
+        })
+    });
+});
+
+app.post('/products', (req, res, next) => {
+    const product = new Product({
+        _id:new mongoose.Types.ObjectId,
+        modelName: req.body.modelName,
+        price: req.body.price,
+        seats: req.body.seats,
+        tank: req.body.tank,
+        acceleration: req.body.acceleration,
+        cylinders: req.body.cylinders,
+        horsepower: req.body.horsepower,
+        topspeed: req.body.topspeed,
+        stock: req.body.stock,
+        img: req.body.img
+    });
+    product.save().then(result => {
+        res.status(201).json({
+            message: 'handling post requests to /products',
+            createdProduct: product
+        });
+    }).catch(err => console.log(err));
 
 });
 
-const productRoutes = require('./api/routes/products');
-app.use('/products', productRoutes);
+
+app.get("/products/:productId", (req, res, next) => {
+
+    const id = req.params.productId;
+    Product.findById(id).exec().then(doc => {
+        console.log(doc);
+        if (doc) {
+
+            res.status(200).json(doc);
+        }
+        else {
+            res.status(404).json({ message: 'no entry found' })
+        }
+
+    }).catch(err => {
+        console.log(err)
+        res.status(500).json({ error: err });
+    });
+});
+
+
+app.delete("/products/:productId", (req, res, next) => {
+
+    const id = req.params.productId
+    Product.remove({ _id: id }).exec().then(res =>{
+
+        res.status(200).json(result);
+    }).catch(err =>{
+
+        console.log(err);
+        res.status(500).json({error: err});
+    });
+});
+
+app.patch("/products:productId",(req,res,next)=>{
+    const id = req.params.productId
+    const updateOps = {};
+    for(const ops of req.body){
+        updateOps[ops.propName] = ops.value;
+    }
+
+    Product.update({_id:id },{$set: {updateOps}}).exec().then(result =>{
+
+        console.log(result);
+        res.status(200).json(result);
+    }).catch(err =>{
+
+        console.log(err);
+        res.status(500).json({error: err})
+    });
+});
 
 
 
 
 
-module.exports = app;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+app.get('/orders', (req, res, next) => {
+
+    Order.find().exec().then(docs => {
+
+        console.log(docs);
+
+                res.status(200).json(docs);
+
+    }).catch(err => {
+
+        console.log(err);
+        res.status(500).json({
+            error: err
+        })
+    });
+});
+
+app.post('/orders', (req, res, next) => {
+    const order = new Order({
+        _id:new mongoose.Types.ObjectId,
+        price: req.body.price,
+        orderDate: req.body.orderDate,
+        orderStatus: req.body.orderStatus,
+        Address: req.body.Address,
+        product: req.body.product,
+        customer: req.body.customer,
+    });
+    order.save().then(result => {
+        res.status(201).json({
+            message: 'handling post requests to /products',
+            ceratedOrder: order
+        });
+    }).catch(err => console.log(err));
+
+});
+
+
+app.get("/orders/:orderId", (req, res, next) => {
+
+    const id = req.params.orderId;
+    Order.findById(id).exec().then(doc => {
+        console.log(doc);
+        if (doc) {
+
+            res.status(200).json(doc);
+        }
+        else {
+            res.status(404).json({ message: 'no entry found' })
+        }
+
+    }).catch(err => {
+        console.log(err)
+        res.status(500).json({ error: err });
+    });
+});
+
+
+app.delete("/orders/:orderId", (req, res, next) => {
+
+    const id = req.params.orderId
+    Order.remove({ _id: id }).exec().then(res =>{
+
+        res.status(200).json(result);
+    }).catch(err =>{
+
+        console.log(err);
+        res.status(500).json({error: err});
+    });
+});
+
+app.patch("/orders:orderId",(req,res,next)=>{
+    const id = req.params.orderId
+    const updateOps = {};
+    for(const ops of req.body){
+        updateOps[ops.propName] = ops.value;
+    }
+
+    Order.update({_id:id },{$set: {updateOps}}).exec().then(result =>{
+
+        console.log(result);
+        res.status(200).json(result);
+    }).catch(err =>{
+
+        console.log(err);
+        res.status(500).json({error: err})
+    });
+});

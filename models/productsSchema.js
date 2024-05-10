@@ -1,16 +1,19 @@
 const mongoose = require('mongoose');
 
 const productSchema = new mongoose.Schema({
-    name: String,
-    price: Number,
-    seats: Number,
-    tankCapacity: Number,
+    _id:mongoose.Schema.Types.ObjectId,
+    modelName: String,
+    price: String,
+    seats: String,
+    tank: String,
     acceleration: String,
-    cylinders: Number,
-    horsepower: Number,
-    topSpeed: Number,
+    cylinders: String,
+    horsepower: String,
+    topSpeed: String,
+    stock:String,
+    img:String
 });
 
-const Product = mongoose.model('Product', productSchema);
+module.exports = mongoose.model('Product', productSchema);
 
-module.exports = Product;
+
