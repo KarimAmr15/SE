@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Porsche</title>
+    <link rel="stylesheet" href="style2.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"> 
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.8/css/line.css">
+
+</head>
+<body class = "loginbody">
+    <input type="checkbox" id="check">
+    <label for="check">
+        <i class = "glyphicon glyphicon-align-justify" id="btn"></i>
+        <i class = "glyphicon glyphicon-remove" id="cancel"></i>
+    </label>
+    <div class="sidebar">  
+        <header class = "header" >Control Panel</header>
+        <a href="Home.html"><span class="glyphicon glyphicon-home">Home</span></a>
+        <a href="About.html"><span class="glyphicon glyphicon-question-sign">About</span></a>
+        <a href="Contact.html"><span class="glyphicon glyphicon-user">Contact</span></a>
+    </div> 
+    <img src="loginlogo.png" class="loginlogo">
+
+    <div class="l">
+        <div class="forms">
+            <div class="form login">
+                <span class="title">Login</span>
+
+                <form action="/Login" method="post">
+                    <div  class="input-field">
+                    <input name="mail" type="text" placeholder="Enter your email" required>
+                    <i class="uil uil-envelope"></i>
+                    </div>
+                    <div class="input-field">
+                        <input name="password" type="password" placeholder="Enter your password" required>
+                        <i class="uil uil-lock"></i>
+                        </div>
+
+
+                        <div class="b">
+                            <button>Login</button>
+                        </div>
+                </form>
+
+            <div class="login-signup">
+                <span class="text">Not a member?
+                    <a href="Register.html" class="text signup-text">Signup Now</a>
+                </span>
+            </div>
+            </div>
+    </div>
+</body>
+</html>   
