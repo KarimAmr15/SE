@@ -186,6 +186,18 @@ label #cancel{
     margin-left: 120px;
     margin-top: 35px;
 }
+.b2{
+    border: none;
+    font-size: 17px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-left: 150px;
+    margin-top: 35px;
+    
+}
 
 .form .login-signup{
     margin-top: 30px;

@@ -73,7 +73,9 @@ app.post("/Register", (req, res) => {
 
     const c = new Customer({ fname, lname, mail, password, dob });
     c.save().then(() => {
-        return res.status(401).send("registered successfully")
+        setTimeout(() => {
+            res.redirect("/Home.html");
+        }, 2000);
     }).catch((err) => {
         console.log(err);
         return res.status(401).send("User not found")
