@@ -5,7 +5,10 @@ const app = express()
 app.use(express.static('views'))
 const port = 3000;
 const mongoose = require('mongoose');
-app.use(express.urlencoded({ extended: true }))
+
+const bodyParser = require('body-parser');
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 const Customer = require("./models/mydataSchema");
 const Product = require('./models/productsSchema');
@@ -140,6 +143,7 @@ app.get('/products', (req, res, next) => {
 });
 
 app.post('/products', (req, res, next) => {
+    console.log(req.body);
     const product = new Product({
         _id:new mongoose.Types.ObjectId,
         modelName: req.body.modelName,
