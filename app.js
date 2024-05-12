@@ -107,10 +107,14 @@ app.post("/Login", async (req, res) => {
     const { mail, password } = req.body;
     try {
         const user = await Customer.login(mail, password)
+        if(user!=null){
         const token = createToken(user._id)
         res.cookie('jwt',token, {maxAge:2*60*1000})
-        res.send('Login successful')
-    } catch (error) {
+        res.send('Login successful')}
+        else{
+            res.send('incorrect email or password')}
+        }
+     catch (error) {
         console.error("Error:", error);
         
     }
