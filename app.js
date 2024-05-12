@@ -9,14 +9,28 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+const cookieParser = require("cookie-parser") 
+app.use(cookieParser())
+
+const jwt = require('jsonwebtoken')
+const requireAuth = require('./middleware/authMiddleware')
 
 const Customer = require("./models/mydataSchema");
 const Product = require('./models/productsSchema');
 const Order = require('./models/ordersSchema');
+const createToken = (id)=>{
+    return jwt.sign({id},'our secret', {expiresIn: 2*60*1000})
+}
 
-
-
-
+app.get('/set-cookie',(req,res)=>{
+    res.cookie('newUser',true)
+    res.cookie('isEmployee',false, {maxAge: 1*60*1000})
+    res.send('you got a cookie')
+})
+app.get('/get-cookies',(req, res)=>{
+    const cookies = req.cookies
+    res.json(cookies)
+})
 
 
 
@@ -70,62 +84,40 @@ mongoose.connect('mongodb+srv://karimamr808:F9TTCB471FRXUxxz@cluster0.89usgfd.mo
     console.log(err)
 });
 
-app.post("/Register", (req, res) => {
-    const { fname, lname, dob, mail, password } = req.body;
-    console.log(fname, lname, dob, mail, password);
 
-    const c = new Customer({ fname, lname, mail, password, dob });
-    c.save().then(() => {
-        setTimeout(() => {
-            res.redirect("/Home.html");
-        }, 2000);
-    }).catch((err) => {
+
+app.post("/Register", async (req, res) => {
+    const { fname, lname, dob, mail, password } = req.body;
+    
+
+    try{
+        const c = await Customer.create({fname, lname, dob, mail, password})
+        const token = createToken(c._id)
+        res.cookie('jwt', token, {maxAge: 2*60*1000})
+        res.redirect('./Login.html')
+    }
+    catch(err){
         console.log(err);
-        return res.status(401).send("User not found")
-    })
+        
+    }
+    
 
 });
 app.post("/Login", async (req, res) => {
     const { mail, password } = req.body;
     try {
-        const user = await Customer.findOne({ mail });
-        console.log(mail);
-        console.log(user.password);
-        if (!user) {
-            return res.status(401).send("User not found");
-        }
-
-        if (user.password === password) {
-
-            res.status(401).send(" Login successfull");
-            console.log("Login successful");
-        } else {
-
-            res.status(401).send("Incorrect email or password");
-        }
+        const user = await Customer.login(mail, password)
+        const token = createToken(user._id)
+        res.cookie('jwt',token, {maxAge:2*60*1000})
+        res.send('Login successful')
     } catch (error) {
         console.error("Error:", error);
-        res.status(500).send("Internal server error");
+        
     }
 });
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-app.get('/products', (req, res, next) => {
+app.get('/products', requireAuth, (req, res, next) => {
 
     Product.find().exec().then(docs => {
 
@@ -167,7 +159,7 @@ app.post('/products', (req, res, next) => {
 });
 
 
-app.get("/products/:productId", (req, res, next) => {
+app.get("/products/:productId", requireAuth, (req, res, next) => {
 
     const id = req.params.productId;
     Product.findById(id).exec().then(doc => {
@@ -220,28 +212,7 @@ app.patch("/products:productId",(req,res,next)=>{
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-app.get('/orders', (req, res, next) => {
+app.get('/orders', requireAuth, (req, res, next) => {
 
     Order.find().exec().then(docs => {
 
@@ -278,7 +249,7 @@ app.post('/orders', (req, res, next) => {
 });
 
 
-app.get("/orders/:orderId", (req, res, next) => {
+app.get("/orders/:orderId", requireAuth, (req, res, next) => {
 
     const id = req.params.orderId;
     Order.findById(id).exec().then(doc => {
@@ -328,3 +299,8 @@ app.patch("/orders:orderId",(req,res,next)=>{
         res.status(500).json({error: err})
     });
 });
+
+app.get('/logout', (req, res)=>{
+    res.cookie('jwt', '',{maxAge: 1})
+    res.redirect('/')
+}) 
