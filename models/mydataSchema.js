@@ -46,10 +46,9 @@ userSchema.statics.login = async function(mail, password){
     if(user){
         const auth = await bcrypt.compare(password, user.password)
         if(auth) {
-            return user; // Return user only if the password is correct
+            return user; 
         }
     }
-    // If the user doesn't exist or the password is incorrect
     return null;
     
     throw Error('Incorrect Email!')
