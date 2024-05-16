@@ -1,7 +1,10 @@
 
+
 const express = require('express')
 const path = require('path');
 const app = express()
+const cors = require("cors");
+app.use(cors())
 app.use(express.static('views'))
 const port = 3000;
 const mongoose = require('mongoose');
@@ -308,3 +311,6 @@ app.get('/logout', (req, res)=>{
     res.cookie('jwt', '',{maxAge: 1})
     res.redirect('/')
 }) 
+
+
+
