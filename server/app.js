@@ -21,9 +21,10 @@ const requireAuth = require('./middleware/authMiddleware')
 const Customer = require("./models/mydataSchema");
 const Product = require('./models/productsSchema');
 const Order = require('./models/ordersSchema');
-const createToken = (id)=>{
-    return jwt.sign({id},'our secret', {expiresIn: 2*60*1000})
-}
+
+const createToken = (id) => {
+    return jwt.sign({ id }, 'your-secret-key', { expiresIn: '2h' });
+};
 
 app.get('/set-cookie',(req,res)=>{
     res.cookie('newUser',true)
@@ -34,6 +35,14 @@ app.get('/get-cookies',(req, res)=>{
     const cookies = req.cookies
     res.json(cookies)
 })
+
+
+app.get('/views/order-form.html', (req, res) => {
+
+    res.sendFile("./views/order-form.html", { root: __dirname })
+
+})
+
 
 
 
@@ -101,22 +110,25 @@ app.post("/Register", async (req, res) => {
 app.post("/Login", async (req, res) => {
     const { mail, password } = req.body;
     try {
-        const user = await Customer.login(mail, password)
-        if(user!=null){
-        const token = createToken(user._id)
-        res.cookie('jwt',token, {maxAge:2*60*1000})
-        res.send('Login successful')}
-        else{
-            res.send('incorrect email or password')}
+        const user = await Customer.login(mail, password);
+        if (user != null) {
+            const token = createToken(user._id);
+            res.cookie('jwt', token, { maxAge: 2 * 60 * 1000 });
+            res.json({ message: 'Login successful', token, customerId: user._id });
+        } else {
+            res.status(401).send('Incorrect email or password');
         }
-     catch (error) {
+    } catch (error) {
         console.error("Error:", error);
-        
+        res.status(500).send('An error occurred during login');
     }
+
 });
 
 
-app.get('/products', (req, res, next) => {
+
+
+app.get('/products',(req, res, next) => {
 
     Product.find().exec().then(docs => {
 
@@ -211,7 +223,9 @@ app.patch("/products:productId",(req,res,next)=>{
 
 
 
-app.get('/orders', requireAuth, (req, res, next) => {
+app.get('/orders', (req, res, next) => {
+
+
 
     Order.find().exec().then(docs => {
 
@@ -228,24 +242,52 @@ app.get('/orders', requireAuth, (req, res, next) => {
     });
 });
 
-app.post('/orders', (req, res, next) => {
-    const order = new Order({
-        _id:new mongoose.Types.ObjectId,
-        price: req.body.price,
-        orderDate: req.body.orderDate,
-        orderStatus: req.body.orderStatus,
-        Address: req.body.Address,
-        product: req.body.product,
-        customer: req.body.customer,
-    });
-    order.save().then(result => {
-        res.status(201).json({
-            message: 'handling post requests to /products',
-            ceratedOrder: order
-        });
-    }).catch(err => console.log(err));
 
+app.post('/orders', async (req, res, next) => {
+    try {
+        const { productName, productPrice, email, phone, address, color } = req.body;
+
+        // Find the customer by email
+        const customer = await Customer.findOne({ mail: email });
+
+        if (!customer) {
+            return res.status(404).json({ error: 'Customer not found with the provided email' });
+        }
+
+        // Find the product ID based on the product name
+        const product = await Product.findOne({ modelName: productName });
+        console.log(productName,productPrice)
+
+        if (!product) {
+            return res.status(404).json({ error: 'Product not found with the provided name' });
+        }
+
+        // Create the order
+        const order = new Order({
+            _id: new mongoose.Types.ObjectId(),
+            price: productPrice,
+            orderDate: new Date(),
+            orderStatus: 'Pending',
+            Address: address,
+            Color: color,
+            product: product._id, // Use the retrieved product ID
+            customer: customer._id, // Use the retrieved customer ID
+        });
+
+        // Save the order
+        const savedOrder = await order.save();
+
+        res.status(201).json({
+            message: 'Order placed successfully',
+            createdOrder: savedOrder
+        });
+    } catch (error) {
+        console.error('Error placing order:', error);
+        res.status(500).json({ error: 'An error occurred while placing the order' });
+    }
 });
+
+
 
 
 app.get("/orders/:orderId", requireAuth, (req, res, next) => {
@@ -305,10 +347,14 @@ app.get('/logout', (req, res)=>{
 }) 
 
 
+app.get('/index', (req, res) => {
+    res.redirect('http://localhost:3000');
+});
 
-app.get("/api", (req,res) =>{
-    res.json({"users":["userone","usertwo","userthree"]})
-})
+app.get('/myOrders', (req, res) => {
+    res.redirect('http://localhost:3000/myOrders');
+});
+
 
 
 

@@ -1,10 +1,38 @@
 import React, { useContext, useEffect } from 'react'
 import ProductsList from '../apis/ProductsList';
 import { ProductsContext } from '../context/ProductsContext';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+
+
+const handleOrder = async (productName, productPrice) => {
+  try {
+    // Encode the product name and price
+    const encodedProductName = encodeURIComponent(productName);
+    const encodedProductPrice = encodeURIComponent(productPrice);
+
+    // Construct the URL with encoded parameters
+    const url = `http://localhost:5000/views/order-form.html?productName=${encodedProductName}&productPrice=${encodedProductPrice}`;
+
+    // Redirect to the order form page with the parameters in the URL
+    window.location.href = url;
+  } catch (error) {
+    console.error('Error placing order:', error);
+  }
+};
+
+
+
+
+
+
+
+
 
 const ListProducts = (props) => {
 
     const {products,setProducts} = useContext(ProductsContext)
+    const navigate = useNavigate(); // useNavigate inside the component
 
     useEffect(() => {
         const fetchData = async () => {
@@ -38,7 +66,8 @@ const ListProducts = (props) => {
                     <p className="card-text">Cylinders: {product.cylinders}</p>
                     <p className="card-text">HorsePower: {product.horsePower}</p>
                     <p className="card-text">TopSpeed: {product.topSpeed}</p>
-                    <button className="btn btn-primary">Order</button>
+                    <button className="btn btn-primary"  onClick={() => handleOrder(product.modelName, product.price)
+}>Order</button>
                   </div>
                 </div>
               </div>

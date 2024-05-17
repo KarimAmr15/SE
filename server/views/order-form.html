@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style7.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Form</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"> 
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.8/css/line.css">
+</head>
+<body>
+    <div class="l">
+        <div class="forms">
+            <div class="form login">
+                <span class="title">Place Order</span>
+    
+                <form action="/orders" method="post">
+                    <div class="input-field">
+                        <input name="email" type="text" placeholder="Enter your email" required>
+                        <i class="uil uil-envelope"></i>
+                    </div>
+                    <div class="input-field">
+                        <input name="phone" type="tel" placeholder="Enter your phone number" required>
+                        <i class="uil uil-phone"></i>
+                    </div>
+                    <div class="input-field">
+                        <input name="address" type="text" placeholder="Enter your address" required>
+                        <i class="uil uil-home"></i>
+                    </div>
+                    <div class="input-field">
+                        <input name="color" type="text" placeholder="Enter preferred color" required>
+                        <i class="uil uil-palette"></i>
+                    </div>
+                    <input type="hidden" name="productName" id="productName" value="">
+                    <input type="hidden" name="productPrice" id="productPrice" value="">
+                    <button type="submit" class="btn btn-primary">Submit Order</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- JavaScript script -->
+    <script>
+        // Extract productId and productPrice from the URL query parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const productName = urlParams.get('productName');
+        const productPrice = urlParams.get('productPrice');
+
+        // Set the values of the hidden input fields
+        document.getElementById('productName').value = productName;
+        document.getElementById('productPrice').value = productPrice;
+    </script>
+</body>
+</html>

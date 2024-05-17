@@ -6,6 +6,7 @@ const orderSchema = new mongoose.Schema({
     orderDate: String,
     orderStatus: String,
     Address: String,
+    Color: String,
     product:mongoose.Schema.Types.ObjectId,
     customer:mongoose.Schema.Types.ObjectId
 });
