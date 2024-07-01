@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Product</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Add New Product</h1>
+        <form id="addProductForm">
+            <div class="mb-3">
+                <label for="modelName" class="form-label">Model Name:</label>
+                <input type="text" class="form-control" id="modelName" name="modelName" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="price" class="form-label">Price:</label>
+                <input type="number" class="form-control" id="price" name="price" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="seats" class="form-label">Seats:</label>
+                <input type="number" class="form-control" id="seats" name="seats" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="tank" class="form-label">Tank:</label>
+                <input type="number" class="form-control" id="tank" name="tank" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="acceleration" class="form-label">Acceleration:</label>
+                <input type="number" class="form-control" id="acceleration" name="acceleration" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="cylinders" class="form-label">Cylinders:</label>
+                <input type="number" class="form-control" id="cylinders" name="cylinders" required>
+            </div>
+
+           <div class="mb-3">
+            <label for="horsePower" class="form-label">Horsepower:</label>
+            <input type="number" class="form-control" id="horsePower" name="horsePower" required> 
+        </div>
+        
+        <div class="mb-3">
+            <label for="topspeed" class="form-label">Top Speed:</label>
+            <input type="number" class="form-control" id="topspeed" name="topSpeed" required> 
+        </div>
+            <div class="mb-3">
+                <label for="stock" class="form-label">Stock:</label>
+                <input type="number" class="form-control" id="stock" name="stock" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="img" class="form-label">Image URL:</label>
+                <input type="text" class="form-control" id="img" name="img" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Add Product</button>
+        </form>
+    </div>
+
+    <!-- Bootstrap JS (optional) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.getElementById('addProductForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+
+            const productData = {};
+            formData.forEach((value, key) => {
+                productData[key] = value;
+            });
+
+            try {
+                const response = await fetch('/products', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(productData)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to add new product');
+                }
+
+                const result = await response.json();
+                console.log('New product added:', result);
+                alert('New product added successfully');
+                window.location.href = 'http://localhost:3000/adminOrders';
+            } catch (error) {
+                console.error('Error adding new product:', error);
+                alert('Error adding new product. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>

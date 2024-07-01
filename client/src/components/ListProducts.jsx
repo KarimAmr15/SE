@@ -7,14 +7,14 @@ import { useNavigate } from 'react-router-dom';
 
 const handleOrder = async (productName, productPrice) => {
   try {
-    // Encode the product name and price
+ 
     const encodedProductName = encodeURIComponent(productName);
     const encodedProductPrice = encodeURIComponent(productPrice);
 
-    // Construct the URL with encoded parameters
+
     const url = `http://localhost:5000/views/order-form.html?productName=${encodedProductName}&productPrice=${encodedProductPrice}`;
 
-    // Redirect to the order form page with the parameters in the URL
+  
     window.location.href = url;
   } catch (error) {
     console.error('Error placing order:', error);
@@ -32,13 +32,12 @@ const handleOrder = async (productName, productPrice) => {
 const ListProducts = (props) => {
 
     const {products,setProducts} = useContext(ProductsContext)
-    const navigate = useNavigate(); // useNavigate inside the component
+    const navigate = useNavigate(); 
 
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const response = await ProductsList.get("/");
-                // Filter out the extra object with key '__v'
                 const filteredProducts = response.data.filter(item => item.__v === undefined);
                 setProducts(filteredProducts);
             } catch (error) {

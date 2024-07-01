@@ -16,15 +16,20 @@ const cookieParser = require("cookie-parser")
 app.use(cookieParser())
 
 const jwt = require('jsonwebtoken')
-const requireAuth = require('./middleware/authMiddleware')
+const requireAuthCustomer = require('./middleware/authMiddlewareCustomer')
+const requireAuthAdmin = require('./middleware/authMiddlewareAdmin')
 
 const Customer = require("./models/mydataSchema");
 const Product = require('./models/productsSchema');
 const Order = require('./models/ordersSchema');
+const Admin = require("./models/adminSchema");
 
-const createToken = (id) => {
-    return jwt.sign({ id }, 'your-secret-key', { expiresIn: '2h' });
-};
+const createTokenCustomer = (id)=>{
+    return jwt.sign({id},'our secret', {expiresIn: 2*60*1000})
+}
+const createTokenAdmin = (id)=>{
+    return jwt.sign({id},'admin secret', {expiresIn: 2*60*1000})
+}
 
 app.get('/set-cookie',(req,res)=>{
     res.cookie('newUser',true)
@@ -82,7 +87,11 @@ app.get('/Register.html', (req, res) => {
 
 })
 
+app.get('/addnewproduct.html', (req, res) => {
 
+    res.sendFile("./views/addnewproduct.html", { root: __dirname })
+
+})
 
 
 
@@ -96,7 +105,7 @@ app.post("/Register", async (req, res) => {
 
     try{
         const c = await Customer.create({fname, lname, dob, mail, password})
-        const token = createToken(c._id)
+        const token = createTokenCustomer(c._id)
         res.cookie('jwt', token, {maxAge: 2*60*1000})
         res.redirect('./Login.html')
     }
@@ -110,19 +119,51 @@ app.post("/Register", async (req, res) => {
 app.post("/Login", async (req, res) => {
     const { mail, password } = req.body;
     try {
-        const user = await Customer.login(mail, password);
-        if (user != null) {
-            const token = createToken(user._id);
-            res.cookie('jwt', token, { maxAge: 2 * 60 * 1000 });
-            res.json({ message: 'Login successful', token, customerId: user._id });
-        } else {
-            res.status(401).send('Incorrect email or password');
+        const user = await Customer.login(mail, password)
+        if(user!=null){
+        const token = createTokenCustomer(user._id)
+        res.cookie('jwt',token, {maxAge:2*60*1000})
+        res.redirect('./Home.html')}
+        else{
+            res.send('incorrect email or password')}
         }
-    } catch (error) {
+     catch (error) {
         console.error("Error:", error);
-        res.status(500).send('An error occurred during login');
+        
     }
+});
+app.post("/AdminReg", async (req, res) => {
+    const { fname, lname, mail, password } = req.body;
+    
 
+    try{
+        const admin = await Admin.create({fname, lname, mail, password})
+        const token = createTokenAdmin(admin._id)
+        res.cookie('jwt', token, {maxAge: 2*60*1000})
+        res.redirect('./AdminLogin.html')
+    }
+    catch(err){
+        console.log(err);
+        
+    }
+    
+
+});
+app.post("/AdminLogin", async (req, res) => {
+    const { mail, password } = req.body;
+    try {
+        const admin = await Admin.login(mail, password)
+        if(admin!=null){
+        const token = createTokenAdmin(admin._id)
+        res.cookie('jwt',token, {maxAge:2*60*1000})
+        res.sendFile("./views/AdminHome.html", { root: __dirname });
+    }
+        else{
+            res.send('incorrect email or password')}
+        }
+     catch (error) {
+        console.error("Error:", error);
+    }
 });
 
 
@@ -155,8 +196,8 @@ app.post('/products', (req, res, next) => {
         tank: req.body.tank,
         acceleration: req.body.acceleration,
         cylinders: req.body.cylinders,
-        horsepower: req.body.horsepower,
-        topspeed: req.body.topspeed,
+        horsePower: req.body.horsePower, 
+        topSpeed: req.body.topSpeed, 
         stock: req.body.stock,
         img: req.body.img
     });
@@ -166,11 +207,10 @@ app.post('/products', (req, res, next) => {
             createdProduct: product
         });
     }).catch(err => console.log(err));
-
 });
 
 
-app.get("/products/:productId", requireAuth, (req, res, next) => {
+app.get("/products/:productId", (req, res, next) => {
 
     const id = req.params.productId;
     Product.findById(id).exec().then(doc => {
@@ -189,38 +229,44 @@ app.get("/products/:productId", requireAuth, (req, res, next) => {
     });
 });
 
+app.delete("/products/:productId", async (req, res, next) => {
+    const productId = req.params.productId;
+    
+    try {
+        // Find the product by ID and remove it
+        const deletedProduct = await Product.deleteOne({ _id: productId });
 
-app.delete("/products/:productId", (req, res, next) => {
+        if (deletedProduct.deletedCount === 0) {
+            return res.status(404).json({ error: "Product not found" });
+        }
 
-    const id = req.params.productId
-    Product.remove({ _id: id }).exec().then(res =>{
-
-        res.status(200).json(result);
-    }).catch(err =>{
-
-        console.log(err);
-        res.status(500).json({error: err});
-    });
+        // Respond with a success message
+        res.status(200).json({ message: "Product deleted successfully" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal server error" });
+    }
 });
-
-app.patch("/products:productId",(req,res,next)=>{
-    const id = req.params.productId
+app.patch("/products/:productId", async (req, res, next) => {
+    const id = req.params.productId;
     const updateOps = {};
-    for(const ops of req.body){
+    for (const ops of req.body) {
         updateOps[ops.propName] = ops.value;
     }
 
-    Product.update({_id:id },{$set: {updateOps}}).exec().then(result =>{
+    try {
+        const updatedProduct = await Product.findByIdAndUpdate(id, { $set: updateOps }, { new: true });
 
-        console.log(result);
-        res.status(200).json(result);
-    }).catch(err =>{
+        if (!updatedProduct) {
+            return res.status(404).json({ error: "Product not found" });
+        }
 
-        console.log(err);
-        res.status(500).json({error: err})
-    });
+        res.status(200).json({ message: "Product updated successfully", updatedProduct });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal server error" });
+    }
 });
-
 
 
 app.get('/orders', (req, res, next) => {
@@ -243,7 +289,8 @@ app.get('/orders', (req, res, next) => {
 });
 
 
-app.post('/orders', async (req, res, next) => {
+
+app.post('/orders', requireAuthCustomer,async (req, res, next) => {
     try {
         const { productName, productPrice, email, phone, address, color } = req.body;
 
@@ -281,6 +328,7 @@ app.post('/orders', async (req, res, next) => {
             message: 'Order placed successfully',
             createdOrder: savedOrder
         });
+        
     } catch (error) {
         console.error('Error placing order:', error);
         res.status(500).json({ error: 'An error occurred while placing the order' });
@@ -290,7 +338,7 @@ app.post('/orders', async (req, res, next) => {
 
 
 
-app.get("/orders/:orderId", requireAuth, (req, res, next) => {
+app.get("/orders/:orderId", (req, res, next) => {
 
     const id = req.params.orderId;
     Order.findById(id).exec().then(doc => {
@@ -309,37 +357,44 @@ app.get("/orders/:orderId", requireAuth, (req, res, next) => {
     });
 });
 
+app.delete("/orders/:orderId", async (req, res, next) => {
+    const orderId = req.params.orderId;
+    
+    try {
+        // Find the order by ID and remove it
+        const deletedOrder = await Order.deleteOne({ _id: orderId });
 
-app.delete("/orders/:orderId", (req, res, next) => {
+        if (deletedOrder.deletedCount === 0) {
+            return res.status(404).json({ error: "Order not found" });
+        }
 
-    const id = req.params.orderId
-    Order.remove({ _id: id }).exec().then(res =>{
-
-        res.status(200).json(result);
-    }).catch(err =>{
-
-        console.log(err);
-        res.status(500).json({error: err});
-    });
+        // Respond with a success message
+        res.status(200).json({ message: "Order deleted successfully" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal server error" });
+    }
 });
 
-app.patch("/orders:orderId",(req,res,next)=>{
-    const id = req.params.orderId
+app.patch("/orders/:orderId", (req, res, next) => {
+    const id = req.params.orderId;
     const updateOps = {};
-    for(const ops of req.body){
+    for (const ops of req.body) {
         updateOps[ops.propName] = ops.value;
     }
 
-    Order.update({_id:id },{$set: {updateOps}}).exec().then(result =>{
-
-        console.log(result);
-        res.status(200).json(result);
-    }).catch(err =>{
-
-        console.log(err);
-        res.status(500).json({error: err})
-    });
+    Order.updateOne({ _id: id }, { $set: updateOps })
+        .exec()
+        .then(result => {
+            console.log(result);
+            res.status(200).json(result);
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(500).json({ error: err });
+        });
 });
+
 
 app.get('/logout', (req, res)=>{
     res.cookie('jwt', '',{maxAge: 1})
@@ -351,9 +406,44 @@ app.get('/index', (req, res) => {
     res.redirect('http://localhost:3000');
 });
 
+app.get('/index2', (req, res) => {
+    res.redirect('http://localhost:3000/adminOrders');
+});
+
+
+app.get('/index3', (req, res) => {
+    res.redirect('http://localhost:3000/orders');
+});
+
+
 app.get('/myOrders', (req, res) => {
     res.redirect('http://localhost:3000/myOrders');
 });
+
+
+
+app.get('/AdminReg.html', (req, res) => {
+
+    res.sendFile("./views/AdminReg.html", { root: __dirname })
+
+});
+
+app.get('/AdminLogin.html', (req, res) => {
+
+    res.sendFile("./views/AdminLogin.html", { root: __dirname })
+
+});
+
+
+
+app.get('/AdminHome', requireAuthAdmin, (req, res, next) => {
+
+
+    res.sendFile("./views/AdminHome.html", { root: __dirname });
+
+});
+
+
 
 
 
